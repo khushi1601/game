@@ -1,3 +1,5 @@
+/* eslint-disable react/display-name */
+
 import React, { useRef, useImperativeHandle, forwardRef, useEffect } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { RigidBody, useRapier } from '@react-three/rapier'
@@ -86,5 +88,5 @@ const Vehicle = forwardRef(({ onCollision }, ref) => {
     </RigidBody>
   )
 })
-
+Vehicle.displayName = 'Vehicle'
 export default Vehicle
