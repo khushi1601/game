@@ -88,5 +88,5 @@ const Vehicle = forwardRef(({ onCollision }, ref) => {
     </RigidBody>
   )
 })
-
+Vehicle.displayName = 'Vehicle'
 export default Vehicle
