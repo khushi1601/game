@@ -1,10 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { Canvas, useThree, useFrame } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
 import Vehicle from './Vehicle'
 import FallingShapes from './FallingShapes'
 import Ground from './Ground'
+
+const CameraController = ({ vehicleRef }) => {
+  const { camera } = useThree()
+  
+  useFrame(() => {
+    if (vehicleRef.current) {
+      const position = vehicleRef.current.translation()
+      camera.position.set(position.x, position.y + 5, position.z + 10)
+      camera.lookAt(position.x, position.y, position.z)
+    }
+  })
+
+  return null
+}
 
 const Game = () => {
   const [gameStarted, setGameStarted] = useState(false)
@@ -17,6 +31,8 @@ const Game = () => {
       if (vehicleRef.current && gameStarted && !gameOver) {
         if (e.key === 'w') vehicleRef.current.moveForward()
         if (e.key === 's') vehicleRef.current.moveBackward()
+        if (e.key === 'a') vehicleRef.current.turnLeft()
+        if (e.key === 'd') vehicleRef.current.turnRight()
       }
     }
 
@@ -34,10 +50,8 @@ const Game = () => {
   }, [gameStarted, gameOver])
 
   const handleCollision = () => {
-    if (!gameOver) {
-      setGameOver(true)
-      // Save score to Supabase here
-    }
+    setGameOver(true)
+    // Save score to Supabase here
   }
 
   const startGame = () => {
@@ -57,10 +71,11 @@ const Game = () => {
           {gameStarted && (
             <>
               <Vehicle ref={vehicleRef} onCollision={handleCollision} />
-              <FallingShapes onCollision={handleCollision} />
+              <FallingShapes />
+              <CameraController vehicleRef={vehicleRef} />
             </>
           )}
-          <Ground />
+          <Ground vehicleRef={vehicleRef} />
         </Physics>
       </Canvas>
       

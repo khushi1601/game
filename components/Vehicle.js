@@ -1,14 +1,11 @@
-/* eslint-disable react/display-name */
-
-import React, { useRef, useImperativeHandle, forwardRef, useEffect } from 'react'
-import { useFrame, useThree } from '@react-three/fiber'
+import React, { useRef, useImperativeHandle, forwardRef } from 'react'
+import { useFrame } from '@react-three/fiber'
 import { RigidBody, useRapier } from '@react-three/rapier'
 import { Box, Cylinder, Sphere } from '@react-three/drei'
 import * as THREE from 'three'
 
 const Vehicle = forwardRef(({ onCollision }, ref) => {
   const bodyRef = useRef()
-  const { camera } = useThree()
   const { rapier, world } = useRapier()
   const rayOrigin = useRef(new THREE.Vector3())
   const rayDir = useRef(new THREE.Vector3())
@@ -16,6 +13,9 @@ const Vehicle = forwardRef(({ onCollision }, ref) => {
   useImperativeHandle(ref, () => ({
     moveForward: () => applyForce([0, 0, -10]),
     moveBackward: () => applyForce([0, 0, 10]),
+    turnLeft: () => applyTorque([0, 1, 0]),
+    turnRight: () => applyTorque([0, -1, 0]),
+    translation: () => bodyRef.current.translation(),
   }))
 
   const applyForce = (force) => {
@@ -24,22 +24,15 @@ const Vehicle = forwardRef(({ onCollision }, ref) => {
     }
   }
 
-  useEffect(() => {
+  const applyTorque = (torque) => {
     if (bodyRef.current) {
-      bodyRef.current.setEnabledRotations(false, true, false)
+      bodyRef.current.applyTorqueImpulse({ x: torque[0], y: torque[1], z: torque[2] })
     }
-  }, [])
+  }
 
-  useFrame((state) => {
+  useFrame(() => {
     if (bodyRef.current) {
       const position = bodyRef.current.translation()
-      const rotation = bodyRef.current.rotation()
-
-      // Update camera position
-      camera.position.x = position.x
-      camera.position.y = position.y + 5
-      camera.position.z = position.z + 10
-      camera.rotation.y = rotation.y
 
       // Ray casting for ground detection
       rayOrigin.current.set(position.x, position.y, position.z)
@@ -88,5 +81,7 @@ const Vehicle = forwardRef(({ onCollision }, ref) => {
     </RigidBody>
   )
 })
+
 Vehicle.displayName = 'Vehicle'
+
 export default Vehicle
